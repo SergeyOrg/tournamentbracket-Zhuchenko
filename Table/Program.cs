@@ -18,6 +18,15 @@ namespace Table
                 }
             }
 
+            SingleElimination(competitors);
+
+            DoubleElimination(competitors);
+
+            Console.ReadLine();
+        }
+
+        private static void SingleElimination(List<string> competitors)
+        {
             int numberOfRound = 1;
             var tours = new List<Tour> {
                 new Tour(1, competitors, numberOfRound)
@@ -34,12 +43,32 @@ namespace Table
                 previousTour = currentTour;
             }
 
-            Show(tours);
-
-            Console.ReadLine();
+            ShowWinners(tours);
         }
 
-       private static void Show(List<Tour> tours)
+        private static void DoubleElimination(List<string> competitors)
+        {
+            var builder = new DoubleEliminationTableBuilder();
+
+            var waitQueue = builder.AddWinnersTour(competitors);
+
+            builder.AddLosersTour(waitQueue);
+            
+            while (builder.GetWinnersFromLastWinnersTour().Count != 1 || builder.GetWinnersFromLastLosersTour().Count != 1)
+            {
+                waitQueue = builder.AddWinnersTour(builder.GetWinnersFromLastWinnersTour());
+
+                while (builder.GetWinnersFromLastLosersTour().Count > waitQueue.Count)
+                {
+                    builder.AddLosersTour(builder.GetWinnersFromLastLosersTour());
+                }
+
+                var currentCompetitors = builder.MixCompetitors(builder.GetWinnersFromLastLosersTour(), waitQueue);
+                builder.AddLosersTour(currentCompetitors);
+            }
+        }
+        
+        private static void ShowWinners(List<Tour> tours)
         {
             var numberOfStr = tours[0].competitors.Count * 2;
             var output = new string[numberOfStr];
